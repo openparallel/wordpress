@@ -55,6 +55,7 @@ function add_user() {
  */
 function edit_user( $user_id = 0 ) {
 	global $wp_roles, $wpdb;
+	$user = new WP_User($user_id);
 	if ( $user_id != 0 ) {
 		$update = true;
 		$user->ID = (int) $user_id;
@@ -62,7 +63,6 @@ function edit_user( $user_id = 0 ) {
 		$user->user_login = $wpdb->escape( $userdata->user_login );
 	} else {
 		$update = false;
-		$user = '';
 	}
 
 	if ( !$update && isset( $_POST['user_login'] ) )
