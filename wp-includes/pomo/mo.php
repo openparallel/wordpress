@@ -30,7 +30,13 @@ class MO extends Gettext_Translations {
 	function export_to_file($filename) {
 		$fh = fopen($filename, 'wb');
 		if ( !$fh ) return false;
-		$entries = array_filter($this->entries, create_function('$e', 'return !empty($e->translations);'));
+		$entries = array();
+		foreach ($this->entries AS $entry_key => $e) {
+		  if ( empty($e->translations) )
+		    continue;
+
+		  $entries[$entry_key] = $e;
+	  }
 		ksort($entries);
 		$magic = 0x950412de;
 		$revision = 0;

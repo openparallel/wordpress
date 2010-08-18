@@ -6,6 +6,10 @@
  * @subpackage Administration
  */
 
+function _sort_importers_callback($a, $b) {
+	return strcmp($a[0], $b[0]);
+}
+
 /**
  * Retrieve list of importers.
  *
@@ -16,7 +20,7 @@
 function get_importers() {
 	global $wp_importers;
 	if ( is_array($wp_importers) )
-		uasort($wp_importers, create_function('$a, $b', 'return strcmp($a[0], $b[0]);'));
+		uasort($wp_importers, '_sort_importers_callback');
 	return $wp_importers;
 }
 

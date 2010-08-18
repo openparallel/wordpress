@@ -183,6 +183,10 @@ function get_plugin_files($plugin) {
 	return $plugin_files;
 }
 
+function _plugin_sort_callback($a, $b) {
+	return strnatcasecmp( $a['Name'], $b['Name'] );
+}
+
 /**
  * Check the plugins directory and retrieve all plugin files with plugin data.
  *
@@ -260,7 +264,7 @@ function get_plugins($plugin_folder = '') {
 		$wp_plugins[plugin_basename( $plugin_file )] = $plugin_data;
 	}
 
-	uasort( $wp_plugins, create_function( '$a, $b', 'return strnatcasecmp( $a["Name"], $b["Name"] );' ));
+	uasort( $wp_plugins, '_plugin_sort_callback');
 
 	$cache_plugins[ $plugin_folder ] = $wp_plugins;
 	wp_cache_set('plugins', $cache_plugins, 'plugins');
@@ -312,7 +316,7 @@ function get_mu_plugins() {
 	if ( isset( $wp_plugins['index.php'] ) && filesize( WPMU_PLUGIN_DIR . '/index.php') <= 30 ) // silence is golden
 		unset( $wp_plugins['index.php'] );
 
-	uasort( $wp_plugins, create_function( '$a, $b', 'return strnatcasecmp( $a["Name"], $b["Name"] );' ));
+	uasort( $wp_plugins, '_plugin_sort_callback');
 
 	return $wp_plugins;
 }
@@ -353,7 +357,7 @@ function get_dropins() {
 		$dropins[ $plugin_file ] = $plugin_data;
 	}
 
-	uksort( $dropins, create_function( '$a, $b', 'return strnatcasecmp( $a, $b );' ));
+	uksort( $dropins, 'strnatcasecmp');
 
 	return $dropins;
 }
@@ -398,6 +402,18 @@ function _get_dropins() {
  */
 function is_plugin_active( $plugin ) {
 	return in_array( $plugin, (array) get_option( 'active_plugins', array() ) ) || is_plugin_active_for_network( $plugin );
+}
+
+/**
+ * Check whether the plugin is not active by checking the active_plugins list.
+ *
+ * @since 3.0.0
+ *
+ * @param string $plugin Base plugin path from plugins directory.
+ * @return bool True, if not in the active plugins list. False, if in the list.
+ */
+function is_plugin_not_active( $plugin ) {
+	return !is_plugin_active( $plugin );
 }
 
 /**

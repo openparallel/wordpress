@@ -171,6 +171,10 @@ function the_content($more_link_text = null, $stripteaser = 0) {
 	echo $content;
 }
 
+function _convert_urlencoded_to_entities($match) {
+  return '&#' . base_convert($match[1], 16, 10) . ';';
+}
+
 /**
  * Retrieve the post content.
  *
@@ -225,7 +229,7 @@ function get_the_content($more_link_text = null, $stripteaser = 0) {
 
 	}
 	if ( $preview ) // preview fix for javascript bug with foreign languages
-		$output =	preg_replace_callback('/\%u([0-9A-F]{4})/', create_function('$match', 'return "&#" . base_convert($match[1], 16, 10) . ";";'), $output);
+		$output =	preg_replace_callback('/\%u([0-9A-F]{4})/', '_convert_urlencoded_to_entities', $output);
 
 	return $output;
 }

@@ -1837,6 +1837,13 @@ jQuery(function($){
 <?php
 }
 
+class _media_post_limits_filter {
+	var $start = 0;
+	function _callback($a) {
+		return 'LIMIT ' . $this->start . ', 10';
+	}
+}
+
 /**
  * {@internal Missing Short Description}}
  *
@@ -1860,7 +1867,10 @@ function media_upload_library_form($errors) {
 	$start = ( $_GET['paged'] - 1 ) * 10;
 	if ( $start < 1 )
 		$start = 0;
-	add_filter( 'post_limits', create_function( '$a', "return 'LIMIT $start, 10';" ) );
+	$filter = new _media_post_limits_filter();
+	$filter->start = $start;
+
+	add_filter( 'post_limits', array($filter, '_callback') );
 
 	list($post_mime_types, $avail_post_mime_types) = wp_edit_attachments_query();
 

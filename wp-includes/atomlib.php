@@ -91,8 +91,20 @@ class AtomParser {
 
         $this->feed = new AtomFeed();
         $this->current = null;
-        $this->map_attrs_func = create_function('$k,$v', 'return "$k=\"$v\"";');
-        $this->map_xmlns_func = create_function('$p,$n', '$xd = "xmlns"; if(strlen($n[0])>0) $xd .= ":{$n[0]}"; return "{$xd}=\"{$n[1]}\"";');
+        $this->map_attrs_func = array('AtomParser', 'map_attrs_func');
+        $this->map_xmlns_func = array('AtomParser', 'map_xmlns_func');
+    }
+
+    function map_attrs_func($k, $v) {
+      return "$k=\"$v\"";
+    }
+    
+    function map_xmlns_func($p, $n) {
+      $xd = 'xmlns';
+      if (strlen($n[0]) > 0) {
+        $xd .= ":{$n[0]}";
+      }
+      return "{$xd}=\"{$n[1]}\"";
     }
 
     function _p($msg) {

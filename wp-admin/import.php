@@ -86,7 +86,7 @@ foreach ( $popular_importers as $pop_importer => $pop_data ) {
 if (empty ($importers)) {
 	echo '<p>'.__('No importers are available.').'</p>'; // TODO: make more helpful
 } else {
-	uasort($importers, create_function('$a, $b', 'return strcmp($a[0], $b[0]);'));
+	uasort($importers, '_sort_importers_callback');
 ?>
 <table class="widefat" cellspacing="0">
 
