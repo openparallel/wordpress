@@ -159,14 +159,29 @@ function apply_filters($tag, $value) {
 	if ( empty($args) )
 		$args = func_get_args();
 
-	do {
-		foreach( (array) current($wp_filter[$tag]) as $the_ )
-			if ( !is_null($the_['function']) ){
-				$args[1] = $value;
-				$value = call_user_func_array($the_['function'], array_slice($args, 1, (int) $the_['accepted_args']));
-			}
+	if (is_defined('PARALLEL_DO_TBB')) {
+		function apply_filters_callback($indices) {
+			global $args, $value, $wp_filter;
 
-	} while ( next($wp_filter[$tag]) !== false );
+			foreach ($indices as $idx) {
+				if (!is_null($wp_filter[$tag][$idx]['function'])) {
+					$args[1] = $value;
+					$value = call_user_func_array($wp_filter[$tag][$idx]['function'], array_slice($args, 1, (int)$wp_filter[$tag][$idx]['accepted_args']));
+				}
+			}
+		}
+
+		parallel_for(0, sizeof($wp_filter[$tag]), 'apply_filters_callback', 1);
+	} else {
+		do {
+			foreach( (array) current($wp_filter[$tag]) as $the_ )
+				if ( !is_null($the_['function']) ){
+					$args[1] = $value;
+					$value = call_user_func_array($the_['function'], array_slice($args, 1, (int) $the_['accepted_args']));
+				}
+
+		} while ( next($wp_filter[$tag]) !== false );
+	}
 
 	array_pop( $wp_current_filter );
 
