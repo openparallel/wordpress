@@ -159,7 +159,7 @@ function apply_filters($tag, $value) {
 	if ( empty($args) )
 		$args = func_get_args();
 
-	if (is_defined('PARALLEL_DO_TBB')) {
+	if (defined('PARALLEL_DO_TBB')) {
 		function apply_filters_callback($indices) {
 			global $args, $value, $wp_filter;
 
