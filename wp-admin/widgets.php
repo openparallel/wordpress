@@ -23,8 +23,12 @@ if ( isset($_GET['widgets-access']) ) {
 	set_user_setting( 'widgets_access', $widgets_access );
 }
 
+function _widget_filter_access_cb() {
+	return ' widgets_access ';
+}
+
 if ( 'on' == $widgets_access )
-	add_filter( 'admin_body_class', create_function('', '{return " widgets_access ";}') );
+	add_filter( 'admin_body_class', '_widget_filter_access_cb' );
 else
 	wp_enqueue_script('admin-widgets');
 

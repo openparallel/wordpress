@@ -1410,7 +1410,7 @@ function add_query_arg() {
 	$qs = urlencode_deep( $qs ); // this re-URL-encodes things that were already in the query string
 	if ( is_array( func_get_arg( 0 ) ) ) {
 		$kayvees = func_get_arg( 0 );
-		$qs = array_merge( $qs, $kayvees );
+		$qs = array_merge( (array)$qs, (array)$kayvees );
 	} else {
 		$qs[func_get_arg( 0 )] = func_get_arg( 1 );
 	}
@@ -2960,7 +2960,7 @@ function wp_parse_args( $args, $defaults = '' ) {
 		wp_parse_str( $args, $r );
 
 	if ( is_array( $defaults ) )
-		return array_merge( $defaults, $r );
+		return array_merge( $defaults, (array)$r );
 	return $r;
 }
 
@@ -4179,7 +4179,7 @@ function get_file_data( $file, $default_headers, $context = '' ) {
 		foreach( $extra_headers as $key=>$value ) {
 			$extra_headers[$key] = $key;
 		}
-		$all_headers = array_merge($extra_headers, $default_headers);
+		$all_headers = array_merge($extra_headers, (array)$default_headers);
 	} else {
 		$all_headers = $default_headers;
 	}

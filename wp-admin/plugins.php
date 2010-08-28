@@ -71,7 +71,7 @@ if ( !empty($action) ) {
 			check_admin_referer('bulk-plugins');
 
 			$plugins = isset( $_POST['checked'] ) ? (array) $_POST['checked'] : array();
-			$plugins = array_filter($plugins, create_function('$plugin', 'return !is_plugin_active($plugin);') ); // Only activate plugins which are not already active.
+			$plugins = array_filter($plugins, 'is_plugin_not_active' ); // Only activate plugins which are not already active.
 			if ( empty($plugins) ) {
 				wp_redirect("plugins.php?plugin_status=$status&paged=$page");
 				exit;
@@ -188,7 +188,7 @@ if ( !empty($action) ) {
 
 			//$_POST = from the plugin form; $_GET = from the FTP details screen.
 			$plugins = isset( $_REQUEST['checked'] ) ? (array) $_REQUEST['checked'] : array();
-			$plugins = array_filter($plugins, create_function('$plugin', 'return !is_plugin_active($plugin);') ); //Do not allow to delete Activated plugins.
+			$plugins = array_filter($plugins, 'is_plugin_not_active' ); //Do not allow to delete Activated plugins.
 			if ( empty($plugins) ) {
 				wp_redirect("plugins.php?plugin_status=$status&paged=$page");
 				exit;

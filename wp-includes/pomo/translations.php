@@ -120,20 +120,25 @@ class Gettext_Translations extends Translations {
 	 */
 	function gettext_select_plural_form($count) {
 		if (!isset($this->_gettext_select_plural_form) || is_null($this->_gettext_select_plural_form)) {
-			list( $nplurals, $expression ) = $this->nplurals_and_expression_from_header($this->get_header('Plural-Forms'));
+			list( $nplurals, $expression_cb ) = $this->nplurals_and_expression_from_header($this->get_header('Plural-Forms'));
 			$this->_nplurals = $nplurals;
-			$this->_gettext_select_plural_form = $this->make_plural_form_function($nplurals, $expression);
+			$this->_gettext_select_plural_form = $expression_cb;
 		}
 		return call_user_func($this->_gettext_select_plural_form, $count);
+	}
+
+	function _gettext_default_plural_cb($n) {
+		$index = (int)($n != 1);
+		return ($index < 2 ? $index : 2 - 1);
 	}
 
 	function nplurals_and_expression_from_header($header) {
 		if (preg_match('/^\s*nplurals\s*=\s*(\d+)\s*;\s+plural\s*=\s*(.+)$/', $header, $matches)) {
 			$nplurals = (int)$matches[1];
 			$expression = trim($this->parenthesize_plural_exression($matches[2]));
-			return array($nplurals, $expression);
+			return array($nplurals, $this->make_plural_form_function($nplurals, $expression));
 		} else {
-			return array(2, 'n != 1');
+			return array(2, array($this, '_gettext_default_plural_cb'));
 		}
 	}
 
@@ -197,9 +202,9 @@ class Gettext_Translations extends Translations {
 	function set_header($header, $value) {
 		parent::set_header($header, $value);
 		if ('Plural-Forms' == $header) {
-			list( $nplurals, $expression ) = $this->nplurals_and_expression_from_header($this->get_header('Plural-Forms'));
+			list( $nplurals, $expression_cb ) = $this->nplurals_and_expression_from_header($this->get_header('Plural-Forms'));
 			$this->_nplurals = $nplurals;
-			$this->_gettext_select_plural_form = $this->make_plural_form_function($nplurals, $expression);
+			$this->_gettext_select_plural_form = $expression_cb;
 		}
 	}
 }

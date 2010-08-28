@@ -164,6 +164,10 @@ function clean_pre($matches) {
 	return $text;
 }
 
+function _preserve_newlines_callback($matches) {
+	return str_replace("\n", "<WPPreserveNewline />", $matches[0]);
+}
+
 /**
  * Replaces double line-breaks with paragraph elements.
  *
@@ -208,7 +212,7 @@ function wpautop($pee, $br = 1) {
 	$pee = preg_replace('!<p>\s*(</?' . $allblocks . '[^>]*>)!', "$1", $pee);
 	$pee = preg_replace('!(</?' . $allblocks . '[^>]*>)\s*</p>!', "$1", $pee);
 	if ($br) {
-		$pee = preg_replace_callback('/<(script|style).*?<\/\\1>/s', create_function('$matches', 'return str_replace("\n", "<WPPreserveNewline />", $matches[0]);'), $pee);
+		$pee = preg_replace_callback('/<(script|style).*?<\/\\1>/s', '_preserve_newlines_callback', $pee);
 		$pee = preg_replace('|(?<!<br />)\s*\n|', "<br />\n", $pee); // optionally make line breaks
 		$pee = str_replace('<WPPreserveNewline />', "\n", $pee);
 	}
@@ -1538,6 +1542,10 @@ function is_email( $email, $deprecated = false ) {
 	return apply_filters( 'is_email', $email, $email, null );
 }
 
+function _wp_iso_unquote($match) {
+	return chr(hexdec(strtolower($match[1])));
+}
+
 /**
  * Convert to ASCII from email subjects.
  *
@@ -1553,7 +1561,7 @@ function wp_iso_descrambler($string) {
 		return $string;
 	} else {
 		$subject = str_replace('_', ' ', $matches[2]);
-		$subject = preg_replace_callback('#\=([0-9a-f]{2})#i', create_function('$match', 'return chr(hexdec(strtolower($match[1])));'), $subject);
+		$subject = preg_replace_callback('#\=([0-9a-f]{2})#i', '_wp_iso_unquote', $subject);
 		return $subject;
 	}
 }
@@ -2674,6 +2682,11 @@ function wp_html_excerpt( $str, $count ) {
 	return $str;
 }
 
+function _links_add_base_with_param($m) {
+	global $wp_formatting_base_cb;
+	return _links_add_base($m, $wp_formatting_base_cb);
+}
+
 /**
  * Add a Base url to relative links in passed content.
  *
@@ -2688,9 +2701,10 @@ function wp_html_excerpt( $str, $count ) {
  * @return string The processed content.
  */
 function links_add_base_url( $content, $base, $attrs = array('src', 'href') ) {
+	global $wp_formatting_base_cb;
 	$attrs = implode('|', (array)$attrs);
-	return preg_replace_callback("!($attrs)=(['\"])(.+?)\\2!i",
-			create_function('$m', 'return _links_add_base($m, "' . $base . '");'),
+	$wp_formatting_base_cb = $base;
+	return preg_replace_callback("!($attrs)=(['\"])(.+?)\\2!i", '_links_add_base_with_param',
 			$content);
 }
 
@@ -2713,6 +2727,11 @@ function _links_add_base($m, $base) {
 		. $m[2];
 }
 
+function _links_add_target_with_param($m) {
+	global $wp_formatting_target_cb;
+	return _links_add_target($m, $wp_formatting_target_cb);
+}
+
 /**
  * Adds a Target attribute to all links in passed content.
  *
@@ -2729,9 +2748,10 @@ function _links_add_base($m, $base) {
  * @return string The processed content.
  */
 function links_add_target( $content, $target = '_blank', $tags = array('a') ) {
+	global $wp_formatting_target_cb;
 	$tags = implode('|', (array)$tags);
-	return preg_replace_callback("!<($tags)(.+?)>!i",
-			create_function('$m', 'return _links_add_target($m, "' . $target . '");'),
+	$wp_formatting_target_cb = $target;
+	return preg_replace_callback("!<($tags)(.+?)>!i", '_links_add_target_with_param',
 			$content);
 }
 

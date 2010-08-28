@@ -971,8 +971,15 @@ function _get_custom_object_labels( $object, $nohier_vs_hier_defaults ) {
 
 	if ( !isset( $object->labels['singular_name'] ) && isset( $object->labels['name'] ) )
 		$object->labels['singular_name'] = $object->labels['name'];
+	
+	foreach ( $nohier_vs_hier_defaults AS $key => $value ) {
+		if ( $object->hierarchical ) {
+			$defaults[$key] = $value[1];
+		} else {
+			$defaults[$key] = $value[0];
+		}
+	}
 
-	$defaults = array_map( create_function( '$x', $object->hierarchical? 'return $x[1];' : 'return $x[0];' ), $nohier_vs_hier_defaults );
 	$labels = array_merge( $defaults, $object->labels );
 	return (object)$labels;
 }

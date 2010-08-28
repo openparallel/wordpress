@@ -6,6 +6,10 @@
  * @subpackage Administration
  */
 
+function _sort_widgets_cb($a, $b) {
+	return strnatcasecmp( $a["name"], $b["name"] );
+}
+
 /**
  * Display list of the available widgets, either all or matching search.
  *
@@ -20,7 +24,7 @@ function wp_list_widgets() {
 	global $wp_registered_widgets, $sidebars_widgets, $wp_registered_widget_controls;
 
 	$sort = $wp_registered_widgets;
-	usort( $sort, create_function( '$a, $b', 'return strnatcasecmp( $a["name"], $b["name"] );' ) );
+	usort( $sort, '_sort_widgets_cb' );
 	$done = array();
 
 	foreach ( $sort as $widget ) {

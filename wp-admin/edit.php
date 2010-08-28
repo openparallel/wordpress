@@ -15,7 +15,7 @@ $table = new WP_Posts_Table;
 $table->check_permissions();
 
 // Back-compat for viewing comments of an entry
-if ( $_redirect = intval( max( @$_REQUEST['p'], @$_REQUEST['attachment_id'], @$_REQUEST['page_id'] ) ) ) {
+if ( isset($_GET['p']) && isset($_GET['attachment_id']) && isset($_GET['page_id']) && $_redirect = intval( max( @$_REQUEST['p'], @$_REQUEST['attachment_id'], @$_REQUEST['page_id'] ) ) ) {
 	wp_redirect( admin_url('edit-comments.php?p=' . $_redirect ) );
 	exit;
 } else {

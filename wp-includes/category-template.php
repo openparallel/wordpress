@@ -612,6 +612,35 @@ function default_topic_count_scale( $count ) {
 	return round(log10($count + 1) * 100);
 }
 
+/**
+ * Callback for comparing tags based on name
+ *
+ * @param object a tag object to be compared
+ * @param object a tag object to be compared
+ * @return integer -1 for less than, 0 for the same and 1 for greater
+ */
+function _wp_tag_cloud_name_sort_cb($a, $b) {
+	return strnatcasecmp($a->name, $b->name);
+}
+
+/**
+ * Callback for comparing tags based on count
+ *
+ * @param object a tag object to be compared
+ * @param object a tag object to be compared
+ * @return integer -1 for less than, 0 for the same and 1 for greater
+ */
+function _wp_tag_cloud_count_sort_cb($a, $b) {
+	return ($a->count > $b->count);
+}
+
+class _tag_clound_topic_count_text_callback {
+	var $single_text;
+	var $multiple_text;
+	function _callback($count) {
+		return sprintf( _n( $this->single_text, $this->multiple_text, $count ), number_format_i18n( $count ) );
+	}
+}
 
 /**
  * Generates a tag cloud (heatmap) from provided data.
@@ -654,10 +683,10 @@ function wp_generate_tag_cloud( $tags, $args = '' ) {
 	);
 
 	if ( !isset( $args['topic_count_text_callback'] ) && isset( $args['single_text'] ) && isset( $args['multiple_text'] ) ) {
-		$body = 'return sprintf (
-			_n(' . var_export($args['single_text'], true) . ', ' . var_export($args['multiple_text'], true) . ', $count),
-			number_format_i18n( $count ));';
-		$args['topic_count_text_callback'] = create_function('$count', $body);
+		$callback = new _tag_clound_topic_count_text_callback();
+		$callback->single_text = $args['single_text'];
+		$callback->multiple_text = $args['multiple_text'];
+		$args['topic_count_text_callback'] = array($callback, '_callback');
 	}
 
 	$args = wp_parse_args( $args, $defaults );
@@ -676,9 +705,9 @@ function wp_generate_tag_cloud( $tags, $args = '' ) {
 		} else {
 			// SQL cannot save you; this is a second (potentially different) sort on a subset of data.
 			if ( 'name' == $orderby )
-				uasort( $tags, create_function('$a, $b', 'return strnatcasecmp($a->name, $b->name);') );
+				uasort( $tags, '_wp_tag_cloud_name_sort_cb' );
 			else
-				uasort( $tags, create_function('$a, $b', 'return ($a->count > $b->count);') );
+				uasort( $tags, '_wp_tag_cloud_count_sort_cb' );
 
 			if ( 'DESC' == $order )
 				$tags = array_reverse( $tags, true );
@@ -712,7 +741,7 @@ function wp_generate_tag_cloud( $tags, $args = '' ) {
 		$tag_link = '#' != $tag->link ? esc_url( $tag->link ) : '#';
 		$tag_id = isset($tags[ $key ]->id) ? $tags[ $key ]->id : $key;
 		$tag_name = $tags[ $key ]->name;
-		$a[] = "<a href='$tag_link' class='tag-link-$tag_id' title='" . esc_attr( $topic_count_text_callback( $real_count ) ) . "' style='font-size: " .
+		$a[] = "<a href='$tag_link' class='tag-link-$tag_id' title='" . esc_attr( call_user_func( $topic_count_text_callback, $real_count ) ) . "' style='font-size: " .
 			( $smallest + ( ( $count - $min_count ) * $font_step ) )
 			. "$unit;'>$tag_name</a>";
 	}
