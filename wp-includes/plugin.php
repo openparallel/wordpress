@@ -160,13 +160,15 @@ function apply_filters($tag, $value) {
 		$args = func_get_args();
 
 	if (defined('PARALLEL_DO_TBB')) {
-		function apply_filters_callback($indices) {
-			global $args, $value, $wp_filter;
+		if (!function_exists('apply_filters_callback')) {
+			function apply_filters_callback($indices) {
+				global $args, $value, $wp_filter;
 
-			foreach ($indices as $idx) {
-				if (!is_null($wp_filter[$tag][$idx]['function'])) {
-					$args[1] = $value;
-					$value = call_user_func_array($wp_filter[$tag][$idx]['function'], array_slice($args, 1, (int)$wp_filter[$tag][$idx]['accepted_args']));
+				foreach ($indices as $idx) {
+					if (!is_null($wp_filter[$tag][$idx]['function'])) {
+						$args[1] = $value;
+						$value = call_user_func_array($wp_filter[$tag][$idx]['function'], array_slice($args, 1, (int)$wp_filter[$tag][$idx]['accepted_args']));
+					}
 				}
 			}
 		}
@@ -229,7 +231,7 @@ function apply_filters_ref_array($tag, $args) {
 
 	reset( $wp_filter[ $tag ] );
 
-	if (defined('PARALLEL_DO_TBB')) {
+	/*if (defined('PARALLEL_DO_TBB')) {
 		function apply_filters_ref_array_callback($indices) {
 			global $args, $wp_filter;
 
@@ -242,14 +244,14 @@ function apply_filters_ref_array($tag, $args) {
 		}
 
 		parallel_for(0, sizeof($wp_filter[$tag]), 'apply_filters_ref_array_callback', 1);
-	} else {
+	} else {*/
 		do {
 			foreach( (array) current($wp_filter[$tag]) as $the_ )
 				if ( !is_null($the_['function']) )
 					$args[0] = call_user_func_array($the_['function'], array_slice($args, 0, (int) $the_['accepted_args']));
 
 		} while ( next($wp_filter[$tag]) !== false );
-	}
+	//}
 
 	array_pop( $wp_current_filter );
 
